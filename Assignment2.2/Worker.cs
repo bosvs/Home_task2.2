@@ -8,39 +8,42 @@ namespace Assignment2._2
 {
     public abstract class Worker
     {
-        private string name;
-        private string position;
-        private double workDay;
-        public string Name
+        private string _name; 
+        private string _position; 
+        private double _workDay; 
+
+        public string Name 
         {
-            get { return name; }
+            get { return _name; }
             set
             {
                 if (!string.IsNullOrEmpty(value))
-                    name = value;
+                    _name = value;
                 else
-                    name = "NOname";
+                    _name = "NOname";
             }
         }
-        public string Position
+
+        public string Position 
         {
-            get { return position; }
-            set { position = value; }
+            get { return _position; }
+            set { _position = value; }
         }
-        public double WorkDay
+
+        public double WorkDay 
         {
-            get { return workDay; }
+            get { return _workDay; }
             set
             {
                 if (value < 0)
-                    workDay = 0;
+                    _workDay = 0;
                 else if (value > 24)
-                    workDay = 24;
-                else 
-                    workDay = value;
+                    _workDay = 24;
+                else
+                    _workDay = value;
             }
         }
-        
+
         public Worker(string Name)
         {
             this.Name = Name;

@@ -12,122 +12,156 @@ namespace Assignment2_2
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.InputEncoding = System.Text.Encoding.UTF8;
 
-            List<Worker> workers = new List<Worker>();
-            List<Team> teamList = new List<Team>();
+            var teamManager = new TeamManager();
+            teamManager.Run();
+        }
+    }
 
+    public class TeamManager
+    {
+        private List<Team> teams = new List<Team>();
+
+        public void Run()
+        {
             bool continueRunning = true;
 
             while (continueRunning)
             {
-                if (teamList.Count > 0)
-                    Console.WriteLine();
+                Console.Clear();
+                Console.WriteLine("Team Management System");
+                Console.WriteLine("======================");
+                if (teams.Any())
+                {
+                    DisplayTeams();
+                }
 
-                Console.Write("Would you like to create a new team? (yes/no): ");
-                string response = GetValidResponse(new string[] { "yes", "no" });
+                Console.Write("Do you want to create a new team? (yes/no): ");
+                string response = UserInput.GetValidResponse(new[] { "yes", "no" });
+
                 if (response == "no")
                 {
                     continueRunning = false;
-                    break;
                 }
                 else
                 {
-                    Console.Write("Enter the new team's name: ");
-                    string newTeamName = GetValidResponse();
-                    Console.WriteLine();
-                    workers = AddNewMembers(newTeamName);
-                    teamList.Add(new Team(newTeamName, workers));
-                    Console.WriteLine();
-                    teamList.Last().TeamInfo();
-                    Console.WriteLine();
+                    CreateNewTeam();
                 }
             }
 
-            if (teamList.Count == 0)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Goodbye!");
-            }
-            else
-            {
-                foreach (Team team in teamList)
-                {
-                    if (team.Members.Count > 0)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine($"In team {team.TeamName}, the workday looks like this: ");
-                        foreach (Worker member in team.Members)
-                        {
-                            member.FillWorkDay();
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine($"Team {team.TeamName} has no members yet.");
-                    }
-                }
-                Console.WriteLine();
-                Console.WriteLine("Goodbye!");
-            }
+            Console.WriteLine("\nThank you for using the Team Management System. Goodbye!");
         }
 
-        private static string GetValidResponse()
+        private void CreateNewTeam()
         {
-            string input = Console.ReadLine();
-
-            while (string.IsNullOrWhiteSpace(input))
-            {
-                Console.Write("Invalid input. Please try again: ");
-                input = Console.ReadLine();
-            }
-
-            return input;
+            Console.Write("\nEnter the new team's name: ");
+            string teamName = UserInput.GetNonEmptyString();
+            List<Worker> workers = AddNewMembers(teamName);
+            teams.Add(new Team(teamName, workers));
+            Console.WriteLine($"\nTeam {teamName} created successfully!");
         }
-        private static List<Worker> AddNewMembers(string teamName)
+
+        private List<Worker> AddNewMembers(string teamName)
         {
-            List<Worker> newMembers = new List<Worker>();
-            Console.Write($"Would you like to add a new member to the team \"{teamName}\"? (yes/no): ");
-            string response = GetValidResponse(new string[] { "yes", "no" });
+            var newMembers = new List<Worker>();
 
-            if (response == "no")
-                return newMembers;
-            else
+            while (true)
             {
-                while (response == "yes")
-                {
-                    Console.Write("Enter the type of worker (developer/manager): ");
-                    string workerType = GetValidResponse(new string[] { "developer", "manager" });
+                Console.Write($"\nDo you want to add a new member to the team \"{teamName}\"? (yes/no): ");
+                string response = UserInput.GetValidResponse(new[] { "yes", "no" });
 
-                    Console.Write("Enter the worker's name: ");
-                    string workerName = Console.ReadLine();
+                if (response == "no")
+                    break;
 
-                    if (workerType == "developer")
-                        newMembers.Add(new Developer(workerName));
-                    else
-                        newMembers.Add(new Manager(workerName));
+                Console.Write("Enter the type of worker (developer/manager): ");
+                string workerType = UserInput.GetValidResponse(new[] { "developer", "manager" });
 
-                    Console.WriteLine();
-                    Console.Write($"Would you like to add another member to the team \"{teamName}\"? (yes/no): ");
-                    response = GetValidResponse(new string[] { "yes", "no" });
-                }
+                Console.Write("Enter the worker's name: ");
+                string workerName = UserInput.GetNonEmptyString();
+                Console.Write("Enter job time of the worker: ");
+                double workDay = UserInput.GetValidAnswerDouble();
+
+                if (workerType == "developer")
+                    newMembers.Add(new Developer(workerName, workDay));
+                else
+                    newMembers.Add(new Manager(workerName, workDay));
             }
 
             return newMembers;
         }
 
-        private static string GetValidResponse(string[] validAnswers)
+        private void DisplayTeams()
         {
-            string input = Console.ReadLine().ToLower();
-            bool isValid = validAnswers.Contains(input);
-
-            while (!isValid)
+            Console.WriteLine("\nCurrent Teams:");
+            foreach (var team in teams)
             {
-                Console.Write("Invalid input. Please try again: ");
-                input = Console.ReadLine().ToLower();
-                isValid = validAnswers.Contains(input);
+                Console.WriteLine($"- {team.TeamName}");
             }
 
+            Console.Write("\nWould you like to see the details of any team? (yes/no): ");
+            string response = UserInput.GetValidResponse(new[] { "yes", "no" });
+
+            if (response == "yes")
+            {
+                Console.Write("Enter the team name: ");
+                string teamName = UserInput.GetNonEmptyString();
+                var team = teams.FirstOrDefault(t => t.TeamName.Equals(teamName, StringComparison.OrdinalIgnoreCase));
+
+                if (team != null)
+                {
+                    team.TeamInfo();
+                    Console.WriteLine();
+                }
+                else
+                {
+                    Console.WriteLine($"\nTeam {teamName} not found.");
+                }
+            }
+        }
+    }
+
+    public static class UserInput
+    {
+        public static string GetNonEmptyString()
+        {
+            string input;
+            while (string.IsNullOrWhiteSpace(input = Console.ReadLine()))
+            {
+                Console.Write("Invalid input. Please try again: ");
+            }
             return input;
+        }
+
+        public static string GetValidResponse(string[] validAnswers)
+        {
+            string input;
+            while (!validAnswers.Contains(input = Console.ReadLine().ToLower()))
+            {
+                Console.Write("Invalid input. Please try again: ");
+            }
+            return input;
+        }
+        public static double GetValidAnswerDouble()
+        {
+            double result = 0;
+            bool isValid = true;
+            string answer = Console.ReadLine();
+
+            if (double.TryParse(answer, out result))
+            {
+                isValid = double.TryParse(answer, out result);
+                return result;
+            }
+            else
+            {
+                while (!isValid)
+                {
+                    Console.Write("Invalid input. Please try again: ");
+                    answer = Console.ReadLine();
+                    isValid = double.TryParse(answer, out result);
+                }
+            }
+
+            return result;
         }
     }
 }

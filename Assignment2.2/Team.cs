@@ -6,38 +6,20 @@ using System.Threading.Tasks;
 
 namespace Assignment2._2
 {
-    internal class Team
+     public class Team
     {
-        public string TeamName;
-        public List<Worker> Members = new List<Worker>();
+        public string TeamName { get; private set; }
+        public List<Worker> Members { get; private set; }
 
-        public Team(string teamName)
+        public Team(string name, List<Worker> members)
         {
-            this.TeamName = teamName;
+            TeamName = name;
+            Members = members;
         }
-        public Team(string teamName, List<Worker> members)
-        {
-            this.TeamName = teamName;
-            if (members.Count > 0)
-            {
-                this.Members = members;
-            }
-           
-        }
-        public void AddMembers(Worker member)
-        {
-            this.Members.Add(member);
-        }
-        public void AddMembers(List<Worker> members)
-        {
-            foreach (Worker member in members)
-            {
-                this.Members.Add(member);
-            }
-        }
+
         public void TeamInfo()
         {
-            Console.WriteLine($"Title of the team - {TeamName}");
+            Console.WriteLine($"Title of the team - {TeamName}\n");
             if (Members.Count > 0)
             {
                 Console.WriteLine($"Members {TeamName}: ");
@@ -45,10 +27,28 @@ namespace Assignment2._2
                 {
                     Console.WriteLine($"    * {member.Name} - {member.Position} - {member.WorkDay};");
                 }
+                if (Members.Count > 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"Team {TeamName} is actively working as follows:");
+                    foreach (Worker member in Members)
+                    {
+                        member.FillWorkDay();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"Team {TeamName} has no activity yet because there are no members added.");
+                }
             }
             else
-                Console.WriteLine($"{TeamName} The team doesn't exist yet.");
+            {
+                Console.WriteLine($"{TeamName} - doesn't have members yet.");
+            }
+               
         }
     }
+
 }
 
